@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "windmi"
+version = "0.1.0"
+description = "Packaged WINDMI model code (exact calculations from windmi_pub.ipynb)"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {file = "LICENSE"}
+authors = [{name = "Soumyajit Dey"}]
+dependencies = [
+  "numpy",
+  "pandas",
+  "scipy",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
