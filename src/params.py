@@ -1,6 +1,6 @@
 """Default WINDMI parameter dictionary.
 
-This file preserves the exact parameter values used in windmi_pub.ipynb.
+This file preserves the constant parameter values
 """
 
 from __future__ import annotations

@@ -6,9 +6,9 @@ import pandas as pd
 from scipy.interpolate import interp1d
 
 def compute_windmi_delay(data: pd.DataFrame) -> pd.Series:
-    """Compute the WINDMI time-delay series (seconds), EXACTLY as in the notebook.
+    """Compute the WINDMI time-delay (seconds).
 
-    Requires columns: 'Np', 'Vx', 'Bz' (with units consistent with the notebook input files).
+    Requires columns: 'Np', 'Vx', 'Bz'.
     """
     Dp = 1.67e-6 * data['Np'] * data['Vx']**2  # dynamic pressure in nPa
     R_subsolar = (10.22 + 1.29*np.tanh(0.184*(data['Bz'] + 8.14))) * (Dp**(-1/6.6))  # subsolar magnetopause standoff distance in RE
@@ -16,6 +16,9 @@ def compute_windmi_delay(data: pd.DataFrame) -> pd.Series:
     return t_delay_windmi
 
 def apply_windmi_time_shift(data, t_delay_windmi):
+    '''Apply time shift to WINDMI data based on the computed time delay. 
+    This time delay accounts for the time it takes for solar wind disturbances to propagate
+    from the ACE spacecraft (L1 point) to the Earth's magnetosphere.'''
     data_shifted = data.copy()
     # Shift time index by time-varying delay (seconds)
     data_shifted.index = data_shifted.index + pd.to_timedelta(

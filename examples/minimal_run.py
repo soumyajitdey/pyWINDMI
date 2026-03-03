@@ -13,7 +13,7 @@ def main():
     stop  = dt.datetime(2000,1,13)
 
     data = load_ace_csv(start.year, data_dir="data", start=start, stop=stop)
-    _supermag = load_supermag_csv(start.year, data_dir="data")  # optional; loaded for parity with notebook
+    # _supermag = load_supermag_csv(start.year, data_dir="data")  # optional; not used in this example
 
     t_delay_windmi = compute_windmi_delay(data)
     data = apply_windmi_time_shift(data, t_delay_windmi)

@@ -5,17 +5,17 @@ from scipy.interpolate import interp1d
 from scipy.integrate import solve_ivp
 
 def _H_switch(I, Ic, DeltaI):
-    # Eq. (17): H(I - Ic) = 0.5 * (1 + tanh((I - Ic)/DeltaI))
+    # Smooth step function (sigmoid) to transition from 0 to 1 around Ic with width DeltaI.
     return 0.5 * (1.0 + np.tanh((I - Ic) / DeltaI))
 
 def windmi_rhs(t, p, x, Vsw):
     """
-    State vector (paper): X(t) = (I, V, I1, VI, p, Kk, I2, Wrc)
+    State vector: X(t) = (I, V, I1, VI, p, Kk, I2, Wrc)
     Eqs. (9)-(16) in Spencer & Horton (2006).
     """
 
     I, V, I1, VI, pres, Kk, I2, Wrc = x
-    ## WINDMI constants and parameters
+    ## WINDMI constants and parameters. For definitions of these parameters, see file 'src/params.py'
     L = p["L"] ;L1 = p["L1"]; L2 = p["L2"] ; L_y = p["L_y"];
     C = p["C"]; C1 = p["C1"];
     R_prc = p["R_prc"]; R_A2 = p["R_A2"];
