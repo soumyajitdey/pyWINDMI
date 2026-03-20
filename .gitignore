@@ -3,9 +3,9 @@ __pycache__/
 *.pyo
 *.pyd
 *.egg-info/
-dist/
-build/
-.ipynb_checkpoints/
 .venv/
-.env/
-data/*.csv
+venv/
+build/
+dist/
+outputs/
+.ipynb_checkpoints/

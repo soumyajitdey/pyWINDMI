@@ -1,0 +1,48 @@
+from __future__ import annotations
+
+from pathlib import Path
+
+import matplotlib.pyplot as plt
+import pandas as pd
+
+from .triggers import theta_from_current
+
+
+def save_comparison_plot(no_trigger: pd.DataFrame, with_trigger: pd.DataFrame, supermag: pd.DataFrame | None, substorms: dict[str, pd.DataFrame] | None, output_path: str | Path, title: str) -> Path:
+    output_path = Path(output_path)
+    if supermag is None:
+        supermag = pd.DataFrame()
+    if substorms is None:
+        substorms = {}
+    fig, axes = plt.subplots(2, 1, figsize=(12, 8), sharex=True)
+
+    axes[0].plot(no_trigger.index, no_trigger["I"], label="No Trigger")
+    axes[0].plot(with_trigger.index, with_trigger["I"], label="With Trigger")
+    if "I_c" in with_trigger.columns:
+        axes[0].plot(with_trigger.index, with_trigger["I_c"], linestyle="--", label="I_c")
+    axes[0].set_ylabel("I")
+    axes[0].set_title(title)
+    axes[0].legend(loc="upper left")
+
+    if "I_c" in with_trigger.columns:
+        theta = theta_from_current(with_trigger["I"], with_trigger["I_c"])
+        axes[1].fill_between(theta.index, 0.0, theta.values, alpha=0.4, label="Theta")
+        axes[1].legend(loc="upper left")
+
+    for ts in substorms.get("Newell", pd.DataFrame()).index:
+        axes[1].axvline(ts, linestyle="--", alpha=0.35)
+    for ts in substorms.get("Ohtani", pd.DataFrame()).index:
+        axes[1].axvline(ts, linestyle=":", alpha=0.35)
+
+    axes[1].set_ylabel("Theta")
+    axes[1].set_xlabel("Time")
+
+    ax2 = axes[1].twinx()
+    if not supermag.empty and "SML" in supermag.columns:
+        ax2.plot(supermag.index, supermag["SML"], alpha=0.6)
+    ax2.set_ylabel("SML (nT)")
+
+    fig.tight_layout()
+    fig.savefig(output_path, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    return output_path
