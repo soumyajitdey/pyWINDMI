@@ -8,4 +8,5 @@ venv/
 build/
 dist/
 outputs/
+data/
 .ipynb_checkpoints/
