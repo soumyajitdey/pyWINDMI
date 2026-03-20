@@ -4,6 +4,7 @@ import numpy as np
 from scipy.integrate import solve_ivp
 from scipy.interpolate import interp1d
 
+# change these at your own risk, just kidding
 DEFAULT_PARAMS = {
     "L": 90.0,
     "L1": 20.0,
@@ -37,6 +38,10 @@ def h_switch(i_value: float, ic_value: float, delta_i: float) -> float:
 
 
 def windmi_rhs(t: float, params: dict, x: np.ndarray, vsw: float) -> np.ndarray:
+    '''Compute the right-hand side of the WINDMI model equations (Horton et al. 1998) 
+    I know the re-assignment of params are redundant, but its useful for modifications.
+    returns the derivatives of the state variables as a numpy array.
+    '''
     i_val, v_val, i1_val, vi_val, pres, kk, i2_val, wrc = x
 
     l_val = params["L"]
@@ -63,9 +68,9 @@ def windmi_rhs(t: float, params: dict, x: np.ndarray, vsw: float) -> np.ndarray:
     ic_trig = params["Ic_trig"]
 
     trigger = h_switch(i_val, ic_trig, delta_i)
-    pres = max(pres, 0.0)
-    kk = max(kk, 0.0)
-    wrc = max(wrc, 0.0)
+    pres = max(pres, 0.0) # Ensure pressure remains non-negative
+    kk = max(kk, 0.0) # Ensure Kk remains non-negative
+    wrc = max(wrc, 0.0) # Ensure Wrc remains non-negative
 
     i_ps = alpha * np.sqrt(pres)
     inj_ps = (pres * v_val * aeff) / (omega_cps * btr * ly_val)
@@ -90,6 +95,22 @@ def windmi_rhs(t: float, params: dict, x: np.ndarray, vsw: float) -> np.ndarray:
 
 
 def solve_windmi_rk45(t_seconds, params: dict, vsw, x0=None, rtol: float = 1e-6, atol: float = 1e-9, ic_trig=None, l_value=None, c_value=None, sigma_value=None):
+    '''Solve the WINDMI model equations using the RK45 method.
+    Parameters:
+    - t_seconds: array-like, time points in seconds at which to evaluate the solution.
+    - params: dict, model parameters (see DEFAULT_PARAMS for reference).
+    - vsw: array-like, solar wind speed values corresponding to t_seconds.
+    - x0: array-like, initial conditions for the state variables (optional, defaults to zeros).
+    - rtol: float, relative tolerance for the solver (default: 1e-6).
+    - atol: float, absolute tolerance for the solver (default: 1e-9).
+    - ic_trig: float, optional override for the Ic_trig parameter.
+    - l_value: float, optional override for the L parameter.
+    - c_value: float, optional override for the C parameter.
+    - sigma_value: float, optional override for the Sigma parameter.
+    Returns:
+    - out: dict, containing time points and state variable values at those points.
+    - local_params: dict, the parameters used for the simulation (including any overrides).
+    '''
     t_seconds = np.asarray(t_seconds, dtype=float)
     vsw = np.asarray(vsw, dtype=float)
     if x0 is None:

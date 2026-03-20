@@ -165,10 +165,14 @@ def _load_yearly_csvs(
 
 
 def load_ace(root: Path, start: dt.datetime, stop: dt.datetime) -> pd.DataFrame:
+    '''Loads ACE data for the specified time range. 
+    Expects files named ACE_{year}.csv with columns: Time, Bx, By, Bz, Vx, Vy, Vz, Np.'''
     return _load_yearly_csvs(root, "ACE", start, stop, "Time", ACE_REQUIRED_COLUMNS)
 
 
 def load_supermag(root: Path, start: dt.datetime, stop: dt.datetime) -> pd.DataFrame:
+    '''Loads SuperMAG SML index for the specified time range.
+    Expects files named SuperMag_{year}.csv with columns: Date_UTC, SML.'''
     try:
         return _load_yearly_csvs(root, "SuperMag", start, stop, "Date_UTC", SUPERMAG_REQUIRED_COLUMNS).loc[start:stop]
     except FileNotFoundError:
@@ -176,6 +180,13 @@ def load_supermag(root: Path, start: dt.datetime, stop: dt.datetime) -> pd.DataF
 
 
 def load_substorm_lists(root: Path, start: dt.datetime, stop: dt.datetime) -> dict[str, pd.DataFrame]:
+    '''loads existing substorm lists:
+    - Forsyth et al. (2015)
+    - Frey et al. (2004)
+    - Liou et al. (2001)
+    - Newell and Gjerloev (2011)
+    - Ohtani et al. (2019)
+    '''
     out: dict[str, pd.DataFrame] = {}
     for key in SUBSTORM_KEYS:
         file_path = root / f"Substorms_{key}_1970_to_2022.csv"
@@ -189,14 +200,16 @@ def load_substorm_lists(root: Path, start: dt.datetime, stop: dt.datetime) -> di
 
 
 def compute_time_delay(data: pd.DataFrame) -> tuple[float, pd.Series]:
+    '''Compute the time delay from ACE to the subsolar point using Shue et al. (1998) formula.'''
     dp = 1.67e-6 * data["Np"] * data["Vx"] ** 2
-    r_subsolar = (10.22 + 1.29 * np.tanh(0.184 * (data["Bz"] + 8.14))) * (dp ** (-1 / 6.6))
-    t_delay = -((250.0 - np.nanmean(r_subsolar)) * 6380.0) / np.nanmean(data["Vx"])
-    t_delay_windmi = -((250.0 - r_subsolar) * 6380.0) / data["Vx"].rolling(window=20, min_periods=1, center=True).mean()
+    r_subsolar = (10.22 + 1.29 * np.tanh(0.184 * (data["Bz"] + 8.14))) * (dp ** (-1 / 6.6)) # distance of subsolar point in Earth radii
+    t_delay = -((250.0 - np.nanmean(r_subsolar)) * 6380.0) / np.nanmean(data["Vx"]) # constant time delay in seconds
+    t_delay_windmi = -((250.0 - r_subsolar) * 6380.0) / data["Vx"].rolling(window=20, min_periods=1, center=True).mean() # time delay series with rolling mean to smooth out short-term fluctuations
     return float(t_delay), t_delay_windmi
 
 
 def apply_windmi_time_shift(data: pd.DataFrame, t_delay_windmi: pd.Series) -> pd.DataFrame:
+    '''Apply the time shift to the ACE data to align it with the subsolar point.'''
     data_shifted = data.copy()
     data_shifted.index = data_shifted.index + pd.to_timedelta(t_delay_windmi, unit="s")
     data_shifted = data_shifted.sort_index()
@@ -221,43 +234,52 @@ def apply_windmi_time_shift(data: pd.DataFrame, t_delay_windmi: pd.Series) -> pd
 
 
 def compute_input_voltage(data: pd.DataFrame, coupling: str = "vBs", f107: float = 172.42) -> pd.DataFrame:
-    bx = data["Bx"]
-    by = data["By"]
+    '''Compute the input voltage (coupling function) from the ACE data.
+    Supported coupling functions:
+    - vBs: 4000 + 1e-6 * ly * |Vx * max(0, -Bz)|
+    - SH: Siscoe-Hill formula
+    - Newell: Newell coupling function
+    Default is vBs.
+    f10.7 only needed for SH forula to compute the saturation potential, but is ignored for other formulas.
+    '''
+    # bx = data["Bx"]
+    # by = data["By"]
     bz = data["Bz"]
     vx = data["Vx"]
-    vy = data["Vy"]
-    vz = data["Vz"]
-    np_sw = data["Np"]
+    # vy = data["Vy"]
+    # vz = data["Vz"]
+    # np_sw = data["Np"]
 
+    # VBs formula
     r_e = 6380.0e3
     ly = 10.0 * r_e
     bz_input = 0.5 * (np.abs(bz) - bz)
     vbs = 4000.0 + (1.0e-6 * ly * np.abs(vx * bz_input))
 
-    m_p = 1.67e-27
-    b_abs = np.sqrt(bx ** 2 + by ** 2 + bz ** 2).replace(0, np.nan)
-    theta = np.arccos(np.clip(bz / b_abs, -1.0, 1.0))
-    v_sw = np.sqrt(vx ** 2 + vy ** 2 + vz ** 2)
-    esw = (v_sw * 1e3) * (np.sqrt(by ** 2 + bz ** 2) * 1e-9) * np.sin(theta / 2.0)
-    psw = m_p * (np_sw * 1.0e6) * ((v_sw * 1.0e3) ** 2)
-    phi_m = 30.0 + (57.6 * (esw * 1.0e3) * ((1.0e9 * psw) ** (-1.0 / 6.0)))
+    # # Siscoe-Hill formula
+    # m_p = 1.67e-27
+    # b_abs = np.sqrt(bx ** 2 + by ** 2 + bz ** 2).replace(0, np.nan)
+    # theta = np.arccos(np.clip(bz / b_abs, -1.0, 1.0))
+    # v_sw = np.sqrt(vx ** 2 + vy ** 2 + vz ** 2)
+    # esw = (v_sw * 1e3) * (np.sqrt(by ** 2 + bz ** 2) * 1e-9) * np.sin(theta / 2.0)
+    # psw = m_p * (np_sw * 1.0e6) * ((v_sw * 1.0e3) ** 2)
+    # phi_m = 30.0 + (57.6 * (esw * 1.0e3) * ((1.0e9 * psw) ** (-1.0 / 6.0)))
+    # c0 = 0.77
+    # sigma_p = c0 * np.sqrt(f107)
+    # phi_s = 1600.0 * ((psw * 1.0e9) ** (1 / 3)) / sigma_p # saturation potential
+    # phi_h = (phi_m * phi_s) / (phi_m + phi_s) # Hill potential 
 
-    c0 = 0.77
-    sigma_p = c0 * np.sqrt(f107)
-    phi_s = 1600.0 * ((psw * 1.0e9) ** (1 / 3)) / sigma_p
-    phi_h = (phi_m * phi_s) / (phi_m + phi_s)
-
-    dphi_mp = (np.abs(vx) ** (4 / 3)) * (b_abs ** (2 / 3)) * (np.sin(theta / 2.0) ** (8 / 3))
-    scale = np.nanmean(vbs) / np.nanmean(dphi_mp)
-    newell_scaled = 4000.0 + scale * dphi_mp
+    # # Newell formula
+    # dphi_mp = (np.abs(vx) ** (4 / 3)) * (b_abs ** (2 / 3)) * (np.sin(theta / 2.0) ** (8 / 3))
+    # scale = np.nanmean(vbs) / np.nanmean(dphi_mp)
+    # newell_scaled = 4000.0 + scale * dphi_mp
 
     out = data.copy()
     out["vBs"] = vbs
-    out["Phi_M"] = 1e3 * phi_m
-    out["Phi_H"] = 1e3 * phi_h
-    out["Newell_scaled"] = newell_scaled
+    # out["SH"] = 1e3 * phi_m
+    # out["Newell"] = newell_scaled
     if coupling not in out.columns:
-        raise ValueError(f"Unknown coupling function '{coupling}'. Valid options: vBs, Phi_M, Phi_H, Newell_scaled")
+        raise ValueError(f"Unknown coupling function '{coupling}'. Valid options: vBs, SH, Newell)")
     out["input_voltage"] = out[coupling]
     return out
 
@@ -282,7 +304,7 @@ def prepare_inputs(
         ace_url_template=ace_url_template,
     )
     ace = load_ace(root, start, stop)
-    supermag = load_supermag(root, start, stop)
+    # supermag = load_supermag(root, start, stop) # not used for running WINDMI, keeping here for evaluation purposes
     substorms = load_substorm_lists(root, start, stop)
     constant_delay, delay_series = compute_time_delay(ace)
     shifted = apply_windmi_time_shift(ace, delay_series)
@@ -293,7 +315,7 @@ def prepare_inputs(
         "start_requested": start.isoformat(),
         "stop_requested": stop.isoformat(),
         "years_requested": _requested_years(start, stop),
-        "supermag_available": not supermag.empty,
+        # "supermag_available": not supermag.empty,
         "substorm_catalogs_available": sorted(substorms.keys()),
     }
-    return processed, supermag, substorms, meta
+    return processed, substorms, meta # add supermag back to return values if needed
