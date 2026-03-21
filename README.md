@@ -1,37 +1,44 @@
-# windmi-pub
+# WINDMI_substorms
 
-`windmi-pub` is a lightweight Python package built from the `windmi_pub.ipynb` notebook. It exposes the shared preprocessing and solver logic as reusable code, and keeps the three notebook cases as runnable example scripts.
+`WINDMI_substorms` is a small Python package for running three published WINDMI experiment setups from solar-wind input data. The code reads ACE yearly CSV files, applies the built-in ACE-to-magnetopause time-shift, computes the WINDMI driving voltage, solves the 8-variable WINDMI system with `solve_ivp`, and writes model outputs and a comparison figure to disk.
 
-## Model summary
+The repository is organized around three example cases:
 
-The package does the following:
-- loads yearly ACE solar-wind inputs,
-- applies the notebook time-shift logic,
-- computes the driving voltage used by WINDMI,
-- runs WINDMI for the three notebook cases,
-- writes CSV outputs and a comparison plot into an output folder.
+- **Case 1**: constant `L`, `C`, and `Sigma`, with a **daily** trigger current `I_c`
+- **Case 2**: constant `L`, `C`, and `Sigma`, with a **rolling** trigger current `I_c`
+- **Case 3**: time-varying `L`, `C`, and `Sigma`, with a **rolling** trigger current `I_c`
 
-## Case mapping from the notebook
+## What the package does
 
-- **Case 1**: constant `L`, `C`, `Sigma` with daily `I_c`
-- **Case 2**: constant `L`, `C`, `Sigma` with rolling `I_c`
-- **Case 3**: variable `L`, `C`, `Sigma` with rolling `I_c`
+At a high level, each run does the following:
+
+1. loads ACE input files for the requested years,
+2. downloads missing ACE files automatically if allowed,
+3. computes the WINDMI propagation delay from ACE to the subsolar point,
+4. resamples the shifted solar-wind data to a 1-minute grid,
+5. computes the input coupling voltage (`vBs` by default),
+6. runs the WINDMI model,
+7. saves output tables and a comparison plot.
+
+Optional SuperMAG and substorm catalog files are used only for the comparison plot. The model run itself does not depend on them.
 
 ## Repository layout
 
 ```text
-windmi_pub_package/
+WINDMI_substorms/
 ├── examples/
-│   ├── case_1_constant_daily_ic.py
-│   ├── case_2_constant_rolling_ic.py
-│   └── case_3_variable_rolling_ic.py
-├── src/windmi_pub/
-│   ├── bootstrap.py
-│   ├── cases.py
-│   ├── data.py
-│   ├── model.py
-│   ├── plotting.py
-│   └── triggers.py
+│   ├── case_1_constant_params_daily_ic.py
+│   ├── case_2_constant_params_rolling_ic.py
+│   └── case_3_variable_params_rolling_ic.py
+├── src/
+│   └── windmi_pub/
+│       ├── __init__.py
+│       ├── bootstrap.py
+│       ├── cases.py
+│       ├── data.py
+│       ├── model.py
+│       ├── plotting.py
+│       └── triggers.py
 ├── pyproject.toml
 ├── setup.py
 └── README.md
@@ -39,14 +46,9 @@ windmi_pub_package/
 
 ## Input data
 
-By default the package looks for input files in:
+### Required ACE files
 
-1. `WINDMI_DATA_ROOT`, if that environment variable is set, or
-2. `./data` relative to the current working directory.
-
-### ACE files
-
-The package expects yearly CSV files named like:
+The examples expect yearly ACE CSV files named like:
 
 ```text
 data/
@@ -55,75 +57,85 @@ data/
 └── ...
 ```
 
-Each ACE file must contain at least:
+Each ACE file must contain at least these columns:
 
 ```text
 Time, Bx, By, Bz, Vx, Vy, Vz, Np
 ```
 
-If a requested ACE year is missing, the example script will:
-- check which yearly ACE files are needed,
-- use the files already present,
-- prompt to download any missing years,
-- download missing years automatically from the public GitHub repository `soumyajitdey/ACE_data`,
-- cache those files locally under your data directory for future runs.
+The code looks for input data in this order:
 
-The built-in default download template is:
+1. the path passed with `--data-root`
+2. `WINDMI_DATA_ROOT`
+3. `./data` relative to the current working directory
+
+If a required ACE year is missing, the examples can download it automatically from the default template:
 
 ```text
 https://raw.githubusercontent.com/soumyajitdey/ACE_data/main/ACE_{year}.csv
 ```
 
-You can still override that default with either:
-- `--ace-url-template`, or
+You can override that source with either:
+
+- `--ace-url-template`
 - `WINDMI_ACE_URL_TEMPLATE`
 
-### SuperMAG and substorm files
+### Optional comparison files
 
-These are optional for running WINDMI.
-If present, they are used for the comparison plot. If absent, the model still runs.
-
-Optional files:
+These files are optional:
 
 ```text
-data/
-├── SuperMag_2000.csv
-├── SuperMag_2001.csv
-├── ...
-├── Substorms_Forsyth_1970_to_2022.csv
-├── Substorms_Frey_1970_to_2022.csv
-├── Substorms_Liou_1970_to_2022.csv
-├── Substorms_Newell_1970_to_2022.csv
-└── Substorms_Ohtani_1970_to_2022.csv
+SuperMag_<year>.csv
+Substorms_Forsyth_1970_to_2022.csv
+Substorms_Frey_1970_to_2022.csv
+Substorms_Liou_1970_to_2022.csv
+Substorms_Newell_1970_to_2022.csv
+Substorms_Ohtani_1970_to_2022.csv
 ```
+
+If they are present, they are added to the output comparison plot. If they are absent, the model still runs.
 
 ## Installation
 
-This repository does **not** auto-install third-party runtime packages.
-Install the package normally, then make sure the required runtime packages are already available in your Python environment.
-If a required package is missing or too old, the example scripts stop with a clear error message.
+This package declares the build metadata in `pyproject.toml`, but the runtime dependencies are checked by `windmi_pub.bootstrap` when an example script starts.
 
-### Editable install
+### Python version
+
+Use **Python 3.10 or newer**.
+
+### Create an environment
 
 ```bash
-git clone <your-github-repo-url>
-cd windmi_pub_package
+git clone https://github.com/soumyajitdey/WINDMI_substorms.git
+cd WINDMI_substorms
+python -m venv .venv
+source .venv/bin/activate
+```
+
+On Windows PowerShell:
+
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+```
+
+### Install the package
+
+Editable install:
+
+```bash
 pip install -e .
 ```
 
-### Regular install
+Regular install:
 
 ```bash
 pip install .
 ```
 
-### Manual dependency check
+### Install required runtime packages
 
-```bash
-python -m windmi_pub.bootstrap
-```
-
-## Runtime packages checked at startup
+The example scripts check for these minimum versions:
 
 - `numpy>=1.23`
 - `pandas>=1.5`
@@ -131,83 +143,89 @@ python -m windmi_pub.bootstrap
 - `matplotlib>=3.7`
 - `tqdm>=4.65`
 
-## Running the example cases
-
-The examples require only `--start` and `--stop`. They support ranges across multiple years, for example `2000-12-30` to `2001-01-05`.
-
-### Case 1
+Install them with:
 
 ```bash
-python examples/case_1_constant_daily_ic.py \
-    --start 2000-12-30T00:00:00 \
-    --stop 2001-01-05T00:00:00
+pip install "numpy>=1.23" "pandas>=1.5" "scipy>=1.10" "matplotlib>=3.7" "tqdm>=4.65"
 ```
 
-### Case 2
+You can test the environment with:
 
 ```bash
-python examples/case_2_constant_rolling_ic.py \
-    --start 2000-12-30T00:00:00 \
-    --stop 2001-01-05T00:00:00
+python -m windmi_pub.bootstrap
 ```
 
-### Case 3
+## Running the three example cases
+
+All three examples require only a start time and a stop time in ISO format.
+
+### Case 1: constant parameters with daily `I_c`
 
 ```bash
-python examples/case_3_variable_rolling_ic.py \
-    --start 2000-12-30T00:00:00 \
-    --stop 2001-01-05T00:00:00
+python examples/case_1_constant_params_daily_ic.py --start 2000-12-30T00:00:00 --stop 2001-01-05T00:00:00
 ```
 
-### With automatic ACE download for missing years
+This run uses the default WINDMI parameters and computes one trigger threshold per day from the 70th percentile of the no-trigger `I` time series.
+
+### Case 2: constant parameters with rolling `I_c`
 
 ```bash
-python examples/case_3_variable_rolling_ic.py \
-    --start 2000-12-30T00:00:00 \
-    --stop 2001-01-05T00:00:00
+python examples/case_2_constant_params_rolling_ic.py --start 2000-12-30T00:00:00 --stop 2001-01-05T00:00:00
 ```
 
-### Non-interactive mode
+This run uses the default WINDMI parameters and updates `I_c` with a 3-hour rolling 70th percentile.
+
+### Case 3: variable parameters with rolling `I_c`
 
 ```bash
-python examples/case_3_variable_rolling_ic.py \
-    --start 2000-12-30T00:00:00 \
-    --stop 2001-01-05T00:00:00 \
-    --no-prompt
+python examples/case_3_variable_params_rolling_ic.py --start 2000-12-30T00:00:00 --stop 2001-01-05T00:00:00
 ```
 
-### Override the default ACE download source
+This run recalculates `L`, `C`, and `Sigma` from the solar-wind input at each time step, then applies the rolling trigger threshold.
 
-```bash
-python examples/case_3_variable_rolling_ic.py \
-    --start 2000-12-30T00:00:00 \
-    --stop 2001-01-05T00:00:00 \
-    --ace-url-template "https://your-server/path/ACE_{year}.csv"
+## Useful command-line options
+
+All three example scripts support the same optional arguments:
+
+```text
+--output-dir         output folder for results
+--data-root          custom directory for ACE / SuperMAG / substorm files
+--ace-url-template   custom download template for missing ACE files
+--no-prompt          disable interactive download prompts
 ```
 
-### Optional output override
+Example with non-interactive download behavior:
 
 ```bash
-python examples/case_3_variable_rolling_ic.py \
-    --start 2000-12-30T00:00:00 \
-    --stop 2001-01-05T00:00:00 \
-    --output-dir ./outputs/custom_case3_run
+python examples/case_3_variable_params_rolling_ic.py --start 2000-12-30T00:00:00 --stop 2001-01-05T00:00:00 --no-prompt
+```
+
+Example with a custom data directory:
+
+```bash
+python examples/case_1_constant_params_daily_ic.py --start 2000-01-09T00:00:00 --stop 2000-01-11T23:59:00 --data-root /path/to/data
 ```
 
 ## Output files
 
-Each example writes a folder containing files such as:
-- `processed_input.csv`
-- `no_trigger.csv`
-- `with_trigger.csv`
-- `summary.json`
-- `comparison.png`
+Each example writes results into its output directory. Typical outputs are:
+
+```text
+processed_input.csv
+no_trigger.csv
+with_trigger.csv
+comparison.png
+summary.json
+```
 
 Case 3 also writes:
-- `variable_parameters.csv`
+
+```text
+variable_parameters.csv
+```
 
 ## Notes
 
-- The WINDMI core functions were left unchanged.
-- The package now supports cross-year runs by loading only the years needed for the requested interval.
-- Missing SuperMAG and substorm files no longer block the model run.
+- The solver uses the RK45 integrator through `scipy.integrate.solve_ivp`.
+- The default input coupling function is `vBs`.
+- The comparison figure plots modeled `I`, trigger state `theta`, optional `I_c`, optional SuperMAG `SML`, and available Newell/Ohtani substorm times.
