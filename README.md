@@ -46,6 +46,12 @@ WINDMI_substorms/
 
 ## Input data
 
+By default, the required ACE solar wind data and SuperMAG geomagnetic indices are imported directly from the following repository:
+
+https://github.com/soumyajitdey/ACE_data.git
+
+No manual download is required unless you want to use custom or local datasets.
+
 ### Required ACE files
 
 The examples expect yearly ACE CSV files named like:
