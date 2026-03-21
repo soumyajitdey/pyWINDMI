@@ -30,18 +30,19 @@ def save_comparison_plot(no_trigger: pd.DataFrame, with_trigger: pd.DataFrame, s
         axes[1].legend(loc="upper left")
 
     for ts in substorms.get("Newell", pd.DataFrame()).index:
-        axes[1].axvline(ts, linestyle="--", alpha=0.35)
+        axes[1].axvline(ts, linestyle="--", c = 'gray', alpha=0.5)
     for ts in substorms.get("Ohtani", pd.DataFrame()).index:
-        axes[1].axvline(ts, linestyle=":", alpha=0.35)
+        axes[1].axvline(ts, linestyle=":", c = 'red', alpha=0.5)
 
     axes[1].set_ylabel("Theta")
     axes[1].set_xlabel("Time")
 
     ax2 = axes[1].twinx()
     if not supermag.empty and "SML" in supermag.columns:
-        ax2.plot(supermag.index, supermag["SML"], alpha=0.6)
-    ax2.set_ylabel("SML (nT)")
-
+        ax2.plot(supermag.index, supermag["SML"], c='purple', alpha=0.6)
+    ax2.set_ylabel("SML (nT)", color='purple')
+    ax2.tick_params(axis='y', color='purple')
+    ax2.spines['right'].set_color('purple')
     fig.tight_layout()
     fig.savefig(output_path, dpi=150, bbox_inches="tight")
     plt.close(fig)

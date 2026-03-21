@@ -304,7 +304,7 @@ def prepare_inputs(
         ace_url_template=ace_url_template,
     )
     ace = load_ace(root, start, stop)
-    # supermag = load_supermag(root, start, stop) # not used for running WINDMI, keeping here for evaluation purposes
+    supermag = load_supermag(root, start, stop) # not used for running WINDMI, keeping here for evaluation purposes
     substorms = load_substorm_lists(root, start, stop)
     constant_delay, delay_series = compute_time_delay(ace)
     shifted = apply_windmi_time_shift(ace, delay_series)
@@ -315,7 +315,7 @@ def prepare_inputs(
         "start_requested": start.isoformat(),
         "stop_requested": stop.isoformat(),
         "years_requested": _requested_years(start, stop),
-        # "supermag_available": not supermag.empty,
+        "supermag_available": not supermag.empty,
         "substorm_catalogs_available": sorted(substorms.keys()),
     }
-    return processed, substorms, meta # add supermag back to return values if needed
+    return processed, supermag, substorms, meta
