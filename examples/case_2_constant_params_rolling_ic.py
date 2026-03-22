@@ -22,9 +22,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--start", required=True, help="Start datetime, for example 2000-12-30T00:00:00")
     parser.add_argument("--stop", required=True, help="Stop datetime, for example 2001-01-05T00:00:00")
     parser.add_argument(
-        "--output-dir",
-        default=str(Path("outputs") / "case_2_constant_rolling_ic"),
-        help="Output folder. Default: outputs/case_2_constant_rolling_ic",
+    "--output-dir",
+    default=None,
+    help="Output folder. If not provided, a dated folder is created.",
     )
     parser.add_argument(
         "--data-root",
@@ -48,10 +48,16 @@ def main() -> None:
     args = parse_args()
     start = dt.datetime.fromisoformat(args.start)
     stop = dt.datetime.fromisoformat(args.stop)
+    if args.output_dir is None:
+        start_str = start.strftime("%Y-%m-%d")
+        stop_str = stop.strftime("%Y-%m-%d")
+        output_dir = Path("outputs") / f"case_2_constant_rolling_ic_{start_str}_to_{stop_str}"
+    else:
+        output_dir = Path(args.output_dir)
     out_dir = run_case_2(
         start=start,
         stop=stop,
-        output_dir=args.output_dir,
+        output_dir=output_dir,
         data_root=args.data_root,
         ace_url_template=args.ace_url_template,
         prompt_for_download=not args.no_prompt,
