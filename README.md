@@ -1,6 +1,6 @@
-# WINDMI_substorms
+# pyWINDMI
 
-`WINDMI_substorms` is a small Python package for running three published WINDMI experiment setups from solar-wind input data. The code reads ACE yearly CSV files, applies the built-in ACE-to-magnetopause time-shift, computes the WINDMI driving voltage, solves the 8-variable WINDMI system with `solve_ivp`, and writes model outputs and a comparison figure to disk.
+`pyWINDMI` is a small Python package for running three published WINDMI experiment setups from solar-wind input data. The code reads ACE yearly CSV files, applies the built-in ACE-to-magnetopause time-shift, computes the WINDMI driving voltage, solves the 8-variable WINDMI system with `solve_ivp`, and writes model outputs and a comparison figure to disk.
 
 The repository is organized around three example cases:
 
@@ -25,7 +25,7 @@ Optional SuperMAG and substorm catalog files are used only for the comparison pl
 ## Repository layout
 
 ```text
-WINDMI_substorms/
+pyWINDMI/
 ├── examples/
 │   ├── case_1_constant_params_daily_ic.py
 │   ├── case_2_constant_params_rolling_ic.py
@@ -112,8 +112,8 @@ Use **Python 3.10 or newer**.
 ### Create an environment
 
 ```bash
-git clone https://github.com/soumyajitdey/WINDMI_substorms.git
-cd WINDMI_substorms
+git clone https://github.com/soumyajitdey/pyWINDMI.git
+cd pyWINDMI
 python -m venv .venv
 source .venv/bin/activate
 ```

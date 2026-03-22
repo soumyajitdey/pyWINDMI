@@ -3,9 +3,9 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "windmi-pub"
+name = "pyWINDMI"
 version = "0.1.0"
-description = "Packaged WINDMI runners derived from the windmi_pub notebook."
+description = "python implementation of WINDMI model"
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [
