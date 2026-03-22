@@ -107,8 +107,9 @@ def run_case_1(
 
     x0 = np.zeros(8, dtype=float)
     pieces = []
-    for day in pd.Index(processed.index.normalize().unique()):
-        day_start = pd.Timestamp(day)
+    no_of_days = (stop - start).days
+    for day in range(no_of_days):
+        day_start = pd.Timestamp(start) + pd.Timedelta(days=day)
         day_stop = day_start + pd.Timedelta(days=1)
         mask = (processed.index >= day_start) & (processed.index < day_stop)
         if not mask.any():
