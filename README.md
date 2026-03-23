@@ -10,6 +10,41 @@ Clone the repository:
 git clone https://github.com/soumyajitdey/pyWINDMI.git
 cd pyWINDMI
 ```
+### (Optional) Create a virtual environment
+
+#### Using Conda (recommended if you use Anaconda/Miniconda)
+
+```bash
+conda create -n windmi_env python=3.10
+conda activate windmi_env
+```
+
+---
+
+#### Using Python venv (Windows)
+
+```bash
+python -m venv windmi_env
+windmi_env\Scripts\activate
+```
+
+---
+
+#### Using Python venv (macOS / Linux)
+
+```bash
+python3 -m venv windmi_env
+source windmi_env/bin/activate
+```
+
+---
+
+After activation, continue with the installation:
+
+```bash
+pip install --upgrade pip
+pip install "numpy>=1.23" "pandas>=1.5" "scipy>=1.10" "matplotlib>=3.7" "tqdm>=4.65"
+```
 
 Install the required packages:
 
