@@ -17,7 +17,8 @@ ACE_REQUIRED_COLUMNS = ("Time", "Bx", "By", "Bz", "Vx", "Vy", "Vz", "Np")
 SUPERMAG_REQUIRED_COLUMNS = ("Date_UTC", "SML")
 SUBSTORM_REQUIRED_COLUMNS = ("Date_UTC",)
 DEFAULT_ACE_URL_TEMPLATE = "https://raw.githubusercontent.com/soumyajitdey/ACE_data/main/ACE_{year}.csv"
-
+DEFAULT_SUPERMAG_URL_TEMPLATE = "https://raw.githubusercontent.com/soumyajitdey/ACE_data/main/SuperMag_{year}.csv"
+DEFAULT_SUBSTORM_URL_TEMPLATE = "https://raw.githubusercontent.com/soumyajitdey/ACE_data/main/Substorms_{key}_1970_to_2022.csv"
 
 def resolve_data_root(data_root: str | os.PathLike[str] | None = None) -> Path:
     if data_root is not None:
@@ -169,6 +170,168 @@ def load_ace(root: Path, start: dt.datetime, stop: dt.datetime) -> pd.DataFrame:
     Expects files named ACE_{year}.csv with columns: Time, Bx, By, Bz, Vx, Vy, Vz, Np.'''
     return _load_yearly_csvs(root, "ACE", start, stop, "Time", ACE_REQUIRED_COLUMNS)
 
+def _download_csv(
+    *,
+    url: str,
+    destination: Path,
+    required_columns: Iterable[str],
+    timeout: int = 120,
+) -> Path:
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    tmp_destination = destination.with_suffix(destination.suffix + ".part")
+    try:
+        with urllib.request.urlopen(url, timeout=timeout) as response, open(tmp_destination, "wb") as out:
+            out.write(response.read())
+        frame = pd.read_csv(tmp_destination)
+        _ensure_columns(frame, required_columns, tmp_destination)
+        tmp_destination.replace(destination)
+    except urllib.error.URLError as exc:
+        if tmp_destination.exists():
+            tmp_destination.unlink()
+        raise RuntimeError(f"Failed to download file from {url}: {exc}") from exc
+    except Exception:
+        if tmp_destination.exists():
+            tmp_destination.unlink()
+        raise
+    return destination
+
+
+def download_supermag_year(
+    year: int,
+    root: Path,
+    url_template: str,
+    timeout: int = 120,
+) -> Path:
+    if "{year}" not in url_template:
+        raise ValueError("SuperMAG URL template must contain '{year}'")
+    url = url_template.format(year=year)
+    destination = root / f"SuperMag_{year}.csv"
+    return _download_csv(
+        url=url,
+        destination=destination,
+        required_columns=SUPERMAG_REQUIRED_COLUMNS,
+        timeout=timeout,
+    )
+
+
+def download_substorm_catalog(
+    key: str,
+    root: Path,
+    url_template: str,
+    timeout: int = 120,
+) -> Path:
+    if "{key}" not in url_template:
+        raise ValueError("Substorm URL template must contain '{key}'")
+    url = url_template.format(key=key)
+    destination = root / f"Substorms_{key}_1970_to_2022.csv"
+    return _download_csv(
+        url=url,
+        destination=destination,
+        required_columns=SUBSTORM_REQUIRED_COLUMNS,
+        timeout=timeout,
+    )
+
+def _missing_supermag_files(root: Path, years: Iterable[int]) -> list[Path]:
+    return [root / f"SuperMag_{year}.csv" for year in years if not (root / f"SuperMag_{year}.csv").exists()]
+
+
+def _missing_substorm_files(root: Path) -> list[Path]:
+    return [
+        root / f"Substorms_{key}_1970_to_2022.csv"
+        for key in SUBSTORM_KEYS
+        if not (root / f"Substorms_{key}_1970_to_2022.csv").exists()
+    ]
+
+
+def ensure_supermag_data(
+    root: Path,
+    start: dt.datetime,
+    stop: dt.datetime,
+    *,
+    download_missing: bool = True,
+    prompt: bool = True,
+    supermag_url_template: str | None = None,
+) -> None:
+    years = _requested_years(start, stop)
+    missing_files = _missing_supermag_files(root, years)
+    if not missing_files:
+        return
+
+    template = (
+        supermag_url_template
+        or os.environ.get("WINDMI_SUPERMAG_URL_TEMPLATE")
+        or DEFAULT_SUPERMAG_URL_TEMPLATE
+    )
+
+    if not download_missing:
+        missing_list = ", ".join(path.name for path in missing_files)
+        raise FileNotFoundError(
+            f"Missing SuperMAG input files: {missing_list}. "
+            f"Automatic download is disabled, so add them under {root}."
+        )
+
+    if prompt and _is_interactive():
+        missing_years = [path.stem.split("_")[-1] for path in missing_files]
+        print(f"Missing SuperMAG files for years: {', '.join(missing_years)}")
+        if not _prompt_yes_no("Download the missing SuperMAG files now?", default=True):
+            missing_list = ", ".join(path.name for path in missing_files)
+            raise FileNotFoundError(
+                f"Missing SuperMAG input files: {missing_list}. "
+                f"Add them under {root} or allow the script to download them."
+            )
+
+    for year in years:
+        destination = root / f"SuperMag_{year}.csv"
+        if destination.exists():
+            continue
+        if prompt and _is_interactive():
+            print(f"Downloading {destination.name} from {template.format(year=year)} ...")
+        download_supermag_year(year, root=root, url_template=template)
+
+
+def ensure_substorm_data(
+    root: Path,
+    *,
+    download_missing: bool = True,
+    prompt: bool = True,
+    substorm_url_template: str | None = None,
+) -> None:
+    missing_files = _missing_substorm_files(root)
+    if not missing_files:
+        return
+
+    template = (
+        substorm_url_template
+        or os.environ.get("WINDMI_SUBSTORM_URL_TEMPLATE")
+        or DEFAULT_SUBSTORM_URL_TEMPLATE
+    )
+
+    if not download_missing:
+        missing_list = ", ".join(path.name for path in missing_files)
+        raise FileNotFoundError(
+            f"Missing substorm catalog files: {missing_list}. "
+            f"Automatic download is disabled, so add them under {root}."
+        )
+
+    if prompt and _is_interactive():
+        missing_names = [path.name for path in missing_files]
+        print("Missing substorm catalogs:")
+        for name in missing_names:
+            print(f"  - {name}")
+        if not _prompt_yes_no("Download the missing substorm catalogs now?", default=True):
+            missing_list = ", ".join(path.name for path in missing_files)
+            raise FileNotFoundError(
+                f"Missing substorm catalog files: {missing_list}. "
+                f"Add them under {root} or allow the script to download them."
+            )
+
+    for key in SUBSTORM_KEYS:
+        destination = root / f"Substorms_{key}_1970_to_2022.csv"
+        if destination.exists():
+            continue
+        if prompt and _is_interactive():
+            print(f"Downloading {destination.name} from {template.format(key=key)} ...")
+        download_substorm_catalog(key, root=root, url_template=template)
 
 def load_supermag(root: Path, start: dt.datetime, stop: dt.datetime) -> pd.DataFrame:
     '''Loads SuperMAG SML index for the specified time range.
@@ -291,10 +454,15 @@ def prepare_inputs(
     coupling: str = "vBs",
     *,
     download_missing_ace: bool = True,
+    download_missing_supermag: bool = True,
+    download_missing_substorms: bool = True,
     prompt_for_download: bool = True,
     ace_url_template: str | None = None,
+    supermag_url_template: str | None = None,
+    substorm_url_template: str | None = None,
 ):
     root = resolve_data_root(data_root)
+
     ensure_ace_data(
         root,
         start,
@@ -303,12 +471,31 @@ def prepare_inputs(
         prompt=prompt_for_download,
         ace_url_template=ace_url_template,
     )
+
+    ensure_supermag_data(
+        root,
+        start,
+        stop,
+        download_missing=download_missing_supermag,
+        prompt=prompt_for_download,
+        supermag_url_template=supermag_url_template,
+    )
+
+    ensure_substorm_data(
+        root,
+        download_missing=download_missing_substorms,
+        prompt=prompt_for_download,
+        substorm_url_template=substorm_url_template,
+    )
+
     ace = load_ace(root, start, stop)
-    supermag = load_supermag(root, start, stop) # not used for running WINDMI, keeping here for evaluation purposes
+    supermag = load_supermag(root, start, stop)
     substorms = load_substorm_lists(root, start, stop)
+
     constant_delay, delay_series = compute_time_delay(ace)
     shifted = apply_windmi_time_shift(ace, delay_series)
     processed = compute_input_voltage(shifted.loc[start:stop], coupling=coupling)
+
     meta = {
         "constant_time_delay_seconds": float(constant_delay),
         "n_input_rows": int(len(processed)),
