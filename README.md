@@ -37,19 +37,19 @@ Run all commands from the **repository root**.
 ### Case 1: constant parameters with daily `I_c`
 
 ```bash
-python examples/case_1_constant_params_daily_ic.py --start 2000-07-15T00:00:00 --stop 2000-07-16T00:00:00
+python examples/case_1_constant_params_daily_ic.py --start 2000-07-15T00:00:00 --stop 2000-07-19T00:00:00
 ```
 
 ### Case 2: constant parameters with rolling `I_c`
 
 ```bash
-python examples/case_2_constant_params_rolling_ic.py --start 2000-07-15T00:00:00 --stop 2000-07-16T00:00:00
+python examples/case_2_constant_params_rolling_ic.py --start 2000-07-15T00:00:00 --stop 2000-07-19T00:00:00
 ```
 
 ### Case 3: variable parameters with rolling `I_c`
 
 ```bash
-python examples/case_3_variable_params_rolling_ic.py --start 2000-07-15T00:00:00 --stop 2000-07-16T00:00:00
+python examples/case_3_variable_params_rolling_ic.py --start 2000-07-15T00:00:00 --stop 2000-07-19T00:00:00
 ```
 
 ### Example with a custom data directory
