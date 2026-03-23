@@ -4,67 +4,39 @@
 
 Use **Python 3.10 or newer**.
 
-Clone the repository:
-
 ```bash
 git clone https://github.com/soumyajitdey/pyWINDMI.git
 cd pyWINDMI
 ```
-### (Optional) Create a virtual environment
 
-#### Using Conda (recommended if you use Anaconda/Miniconda)
+### (Recommended) Create a virtual environment
 
+**Conda (if you use it):**
 ```bash
 conda create -n windmi_env python=3.10
 conda activate windmi_env
 ```
 
----
-
-#### Using Python venv (Windows)
-
+**Otherwise (works everywhere):**
 ```bash
 python -m venv windmi_env
-windmi_env\Scripts\activate
+source windmi_env/bin/activate   # macOS/Linux
+windmi_env\Scripts\activate      # Windows
 ```
 
----
-
-#### Using Python venv (macOS / Linux)
-
-```bash
-python3 -m venv windmi_env
-source windmi_env/bin/activate
-```
-
----
-
-After activation, continue with the installation:
+### Install dependencies
 
 ```bash
 pip install --upgrade pip
 pip install "numpy>=1.23" "pandas>=1.5" "scipy>=1.10" "matplotlib>=3.7" "tqdm>=4.65"
-```
-
-Install the required packages:
-
-```bash
-pip install --upgrade pip
-pip install "numpy>=1.23" "pandas>=1.5" "scipy>=1.10" "matplotlib>=3.7" "tqdm>=4.65"
-```
-
-Optional editable install:
-
-```bash
 pip install -e .
 ```
 
-Check that the environment is ready:
+### Verify
 
 ```bash
 python -m windmi_pub.bootstrap
 ```
-
 ## Example runs
 
 Run all commands from the **repository root**.
