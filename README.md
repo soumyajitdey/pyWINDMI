@@ -131,7 +131,7 @@ Optional SuperMAG and substorm catalog files are used only for comparison plots.
 ## Input data
 
 By default, ACE and SuperMAG data files are imported from this GitHub repository:
-
+(currently available for the years 1995-2009)
 ```text
 https://github.com/soumyajitdey/ACE_data.git
 ```
