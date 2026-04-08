@@ -5,7 +5,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from .triggers import theta_from_current
+from triggers import theta_from_current
 
 
 def save_comparison_plot(no_trigger: pd.DataFrame, with_trigger: pd.DataFrame, supermag: pd.DataFrame | None, substorms: dict[str, pd.DataFrame] | None, output_path: str | Path, title: str) -> Path:
