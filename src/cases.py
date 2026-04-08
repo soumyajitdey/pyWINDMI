@@ -9,10 +9,10 @@ import pandas as pd
 from numpy import pi, sin
 from tqdm import tqdm
 
-from .data import prepare_inputs
-from .model import DEFAULT_PARAMS, STATE_KEYS, solve_windmi_rk45
-from .plotting import save_comparison_plot
-from .triggers import rolling_percentile_trigger
+from data import prepare_inputs
+from model import DEFAULT_PARAMS, STATE_KEYS, solve_windmi_rk45
+from plotting import save_comparison_plot
+from triggers import rolling_percentile_trigger
 
 
 def _as_seconds(index: pd.DatetimeIndex, start: dt.datetime) -> np.ndarray:

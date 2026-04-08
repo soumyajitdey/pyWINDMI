@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from .model import h_switch
+from model import h_switch
 
 
 def rolling_percentile_trigger(current: pd.Series, window_minutes: int = 180, quantile: float = 0.7) -> pd.Series:

@@ -35,7 +35,7 @@ pip install -e .
 ### Verify
 
 ```bash
-python -m windmi_pub.bootstrap
+python -m bootstrap
 ```
 ## Example runs
 
@@ -101,14 +101,13 @@ pyWINDMI/
 │   ├── case_2_constant_params_rolling_ic.py
 │   └── case_3_variable_params_rolling_ic.py
 ├── src/
-│   └── windmi_pub/
-│       ├── __init__.py
-│       ├── bootstrap.py
-│       ├── cases.py
-│       ├── data.py
-│       ├── model.py
-│       ├── plotting.py
-│       └── triggers.py
+│   ├── __init__.py
+│   ├── bootstrap.py
+│   ├── cases.py
+│   ├── data.py
+│   ├── model.py
+│   ├── plotting.py
+│   └── triggers.py
 ├── pyproject.toml
 ├── setup.py
 └── README.md

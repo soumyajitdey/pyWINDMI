@@ -11,10 +11,10 @@ SRC_DIR = REPO_ROOT / 'src'
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
-from windmi_pub.bootstrap import ensure_dependencies
+from bootstrap import ensure_dependencies
 
 ensure_dependencies(quiet=False)
-from windmi_pub.cases import run_case_1
+from cases import run_case_1
 
 
 def parse_args() -> argparse.Namespace:
