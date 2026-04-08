@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyWINDMI"
-version = "0.1.0"
+version = "0.1.1"
 description = "python implementation of WINDMI model"
 readme = "README.md"
 requires-python = ">=3.10"
