@@ -22,7 +22,7 @@ REQUIREMENTS = (
     Requirement("scipy", "scipy", "1.10"),
     Requirement("matplotlib", "matplotlib", "3.7"),
     Requirement("tqdm", "tqdm", "4.65"),
-)
+    )
 
 
 class DependencyError(RuntimeError):

@@ -405,20 +405,21 @@ def compute_input_voltage(data: pd.DataFrame, coupling: str = "vBs", f107: float
     Default is vBs.
     f10.7 only needed for SH forula to compute the saturation potential, but is ignored for other formulas.
     '''
-    # bx = data["Bx"]
-    # by = data["By"]
+    bx = data["Bx"]
+    by = data["By"]
     bz = data["Bz"]
     vx = data["Vx"]
-    # vy = data["Vy"]
-    # vz = data["Vz"]
-    # np_sw = data["Np"]
+    vy = data["Vy"]
+    vz = data["Vz"]
+    np_sw = data["Np"]
 
     # VBs formula
-    r_e = 6380.0e3
-    ly = 10.0 * r_e
-    bz_input = 0.5 * (np.abs(bz) - bz)
-    vbs = 4000.0 + (1.0e-6 * ly * np.abs(vx * bz_input))
-
+    if coupling == "vBs":
+        r_e = 6380.0e3
+        ly = 10.0 * r_e
+        bz_input = 0.5 * (np.abs(bz) - bz)
+        vbs = 4000.0 + (1.0e-6 * ly * np.abs(vx * bz_input))
+        # data["Vsw"] = vbs
     # # Siscoe-Hill formula
     # m_p = 1.67e-27
     # b_abs = np.sqrt(bx ** 2 + by ** 2 + bz ** 2).replace(0, np.nan)

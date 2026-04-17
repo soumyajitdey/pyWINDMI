@@ -9,4 +9,5 @@ build/
 dist/
 outputs/
 data/
+dumped/
 .ipynb_checkpoints/

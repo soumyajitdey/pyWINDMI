@@ -4,7 +4,7 @@ import numpy as np
 from scipy.integrate import solve_ivp
 from scipy.interpolate import interp1d
 
-# change these at your own risk, just kidding
+# change these at your own risk
 DEFAULT_PARAMS = {
     "L": 90.0,
     "L1": 20.0,
@@ -90,7 +90,7 @@ def windmi_rhs(t: float, params: dict, x: np.ndarray, vsw: float) -> np.ndarray:
     dvi_dt = (i1_val - i2_val - (sigma_i * vi_val)) / c1_val
     di2_dt = (vi_val - ((r_prc + r_a2) * i2_val)) / l2_val
     dwrc_dt = (r_prc * (i2_val ** 2)) + inj_rc - (wrc / tau_rc)
-
+    
     return np.array([di_dt, dv_dt, di1_dt, dvi_dt, dp_dt, dkk_dt, di2_dt, dwrc_dt], dtype=float)
 
 
