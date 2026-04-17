@@ -1,6 +1,31 @@
 # pyWINDMI
 
-Python implementation of the WINDMI model with a single executable example script. The run mode is selected from the command line by choosing whether \(L\), \(C\), and \(\Sigma\) are constant or variable, and whether the trigger current \(I_c\) is computed daily or with a rolling 3-hour window.
+Python implementation of the WINDMI (Wind-driven Magnetosphere–Ionosphere) model, a low-dimensional, physics-based model that simulates the transfer and storage of energy in the magnetosphere–ionosphere system. The model solves a coupled set of non-linear differential equations to produce time series of key state variables such as cross-tail current, region-1 and region-2 currents, ionospheric potential, plasma sheet pressure, and ring current energy.
+
+## Basic Usage
+
+The model is executed using a single script, where the user specifies the time range and run configuration.
+
+### Required arguments
+
+- `--start` : Start date and time (UTC)  
+- `--stop`  : End date and time (UTC)  
+- `--mode-LCS` : Treatment of \(L\), \(C\), and \(\Sigma\)  
+  - `constant`  
+  - `variable`  
+- `--mode-Ic` : Method for computing trigger current \(I_c\)  
+  - `daily`  
+  - `rolling`  
+
+### Example
+
+```bash
+python run_windmi.py \
+    --start 2000-01-01T00:00:00 \
+    --stop 2000-01-02T00:00:00 \
+    --mode-LCS variable \
+    --mode-Ic rolling
+```
 
 ## Installation
 
@@ -9,23 +34,6 @@ Use **Python 3.10 or newer**.
 ```bash
 git clone https://github.com/soumyajitdey/pyWINDMI.git
 cd pyWINDMI
-```
-
-### Create a virtual environment
-
-Conda:
-
-```bash
-conda create -n windmi_env python=3.10
-conda activate windmi_env
-```
-
-`venv`:
-
-```bash
-python -m venv windmi_env
-source windmi_env/bin/activate   # macOS/Linux
-windmi_env\Scripts\activate      # Windows
 ```
 
 ### Install dependencies
@@ -46,7 +54,7 @@ python -m bootstrap
 
 Run commands from the repository root.
 
-### Main example script
+### Example: constant \(L,C,\Sigma\) with daily \(I_c\)
 
 ```bash
 python examples/run_windmi.py \
@@ -159,19 +167,21 @@ pyWINDMI/
 └── README.md
 ```
 
-## Input data
+## Input Data
 
-By default, missing files are downloaded from the companion data repository:
+If the required input files are not available locally, they are automatically downloaded from the companion repository:
 
 ```text
 https://github.com/soumyajitdey/ACE_data
 ```
 
-The code looks for files in this order:
+The code searches for input data in the following order:
 
-1. the path passed through `--data-root`,
-2. the environment variable `WINDMI_DATA_ROOT`,
-3. `./data` relative to the current working directory.
+1. The directory specified via the `--data-root` argument  
+2. The directory set in the `WINDMI_DATA_ROOT` environment variable  
+3. A local `./data` directory in the current working path  
+
+The first location that contains the required files is used.
 
 ### Required ACE files
 
