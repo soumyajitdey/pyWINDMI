@@ -42,7 +42,7 @@ The time window for the run, in ISO 8601 format (UTC). The model fetches and pro
 
 ### `--mode-LCS`
 
-Controls how the three core model parameters — inductance `L`, capacitance `C`, and conductance `$\sigma$` of magnetosphere — are determined.
+Controls how the three core model parameters — inductance `L`, capacitance `C`, and conductance `σ` of magnetosphere — are determined.
 
 - `constant` — use fixed default values throughout the run.
 - `variable` — derive time-dependent values from the solar-wind input at each timestep.
@@ -97,9 +97,9 @@ The directory contains the following files.
 
 **`with_trigger.csv`** — state variables from the second model pass, with the unloading trigger active. Same columns as above, plus `I_c`, the trigger threshold at each timestep.
 
-**`variable_parameters.csv`** *(written only when `--mode-LCS variable` is used)* — the time-dependent values of `L`, `C`, and `&sigma;` computed from the input data.
+**`variable_parameters.csv`** *(written only when `--mode-LCS variable` is used)* — the time-dependent values of `L`, `C`, and `σ` computed from the input data.
 
-**`comparison.png`** — a two-panel figure. The top panel overlays `I` from both passes alongside `I_c`. The bottom panel shows the unloading trigger function `$\theta$`, with optional substorm onset markers from available catalogs and SuperMAG `SML` index on the secondary axis.
+**`comparison.png`** — a two-panel figure. The top panel overlays `I` from both passes alongside `I_c`. The bottom panel shows the unloading trigger function `Θ`, with optional substorm onset markers from available catalogs and SuperMAG `SML` index on the secondary axis.
 
 **`summary.json`** — metadata for the run: requested and actual time ranges, row counts for each output table, data availability flags, and the mode settings used.
 
