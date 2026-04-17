@@ -1,5 +1,7 @@
 # pyWINDMI
 
+Python implementation of the WINDMI model with a single executable example script. The run mode is selected from the command line by choosing whether \(L\), \(C\), and \(\Sigma\) are constant or variable, and whether the trigger current \(I_c\) is computed daily or with a rolling 3-hour window.
+
 ## Installation
 
 Use **Python 3.10 or newer**.
@@ -9,15 +11,17 @@ git clone https://github.com/soumyajitdey/pyWINDMI.git
 cd pyWINDMI
 ```
 
-### (Recommended) Create a virtual environment
+### Create a virtual environment
 
-**Conda (if you use it):**
+Conda:
+
 ```bash
 conda create -n windmi_env python=3.10
 conda activate windmi_env
 ```
 
-**Otherwise (works everywhere):**
+`venv`:
+
 ```bash
 python -m venv windmi_env
 source windmi_env/bin/activate   # macOS/Linux
@@ -37,69 +41,108 @@ pip install -e .
 ```bash
 python -m bootstrap
 ```
-## Example runs
 
-Run all commands from the **repository root**.
+## Quick start
 
-### Case 1: constant parameters with daily `I_c`
+Run commands from the repository root.
+
+### Main example script
 
 ```bash
-python examples/case_1_constant_params_daily_ic.py --start 2000-07-15T00:00:00 --stop 2000-07-19T00:00:00
+python examples/run_windmi.py \
+    --start 2000-07-15T00:00:00 \
+    --stop 2000-07-19T00:00:00 \
+    --mode-LCS constant \
+    --mode-Ic daily
 ```
 
-### Case 2: constant parameters with rolling `I_c`
+### Example: constant \(L,C,\Sigma\) with rolling \(I_c\)
 
 ```bash
-python examples/case_2_constant_params_rolling_ic.py --start 2000-07-15T00:00:00 --stop 2000-07-19T00:00:00
+python examples/run_windmi.py \
+    --start 2000-07-15T00:00:00 \
+    --stop 2000-07-19T00:00:00 \
+    --mode-LCS constant \
+    --mode-Ic rolling
 ```
 
-### Case 3: variable parameters with rolling `I_c`
+### Example: variable \(L,C,\Sigma\) with rolling \(I_c\)
 
 ```bash
-python examples/case_3_variable_params_rolling_ic.py --start 2000-07-15T00:00:00 --stop 2000-07-19T00:00:00
+python examples/run_windmi.py \
+    --start 2000-07-15T00:00:00 \
+    --stop 2000-07-19T00:00:00 \
+    --mode-LCS variable \
+    --mode-Ic rolling
 ```
 
 ### Example with a custom data directory
 
 ```bash
-python examples/case_1_constant_params_daily_ic.py \
+python examples/run_windmi.py \
     --start 2000-12-30T00:00:00 \
     --stop 2001-01-05T00:00:00 \
+    --mode-LCS variable \
+    --mode-Ic daily \
     --data-root /path/to/data
 ```
 
 ### Example without interactive prompts
 
 ```bash
-python examples/case_2_constant_params_rolling_ic.py \
+python examples/run_windmi.py \
     --start 2000-12-30T00:00:00 \
     --stop 2001-01-05T00:00:00 \
+    --mode-LCS constant \
+    --mode-Ic rolling \
     --no-prompt
 ```
 
-## Overview
+## Command-line options
 
-`pyWINDMI` is a Python package for running three published WINDMI experiment setups from solar-wind input data.
+```text
+--start              Start datetime in ISO format
+--stop               Stop datetime in ISO format
+--mode-LCS           constant | variable
+--mode-Ic            daily | rolling
+--output-dir         Output folder. If omitted, a dated folder is created
+--data-root          Optional path to the input-data directory
+--ace-url-template   Optional download template for missing ACE files
+--no-prompt          Disable interactive download prompts
+```
 
-The package reads ACE yearly CSV files, applies the built-in ACE-to-magnetopause time shift, computes the WINDMI driving voltage, solves the 8-variable WINDMI system, and writes model outputs and comparison plots to disk.
+## Mode definitions
 
-## Included example cases
+### `--mode-LCS`
 
-The repository provides three example runs:
+- `constant`: use the default constant WINDMI parameters `L`, `C`, and `Sigma`.
+- `variable`: compute time-dependent `L`, `C`, and `Sigma` from the solar-wind input data at each step.
 
-- **Case 1**: constant `L`, `C`, and `Sigma`, with a daily trigger current `I_c`
-- **Case 2**: constant `L`, `C`, and `Sigma`, with a rolling trigger current `I_c`
-- **Case 3**: time-varying `L`, `C`, and `Sigma`, with a rolling trigger current `I_c`
+### `--mode-Ic`
+
+- `daily`: compute one trigger current `I_c` per day from the 70th percentile of the no-trigger current `I` for that day.
+- `rolling`: compute `I_c` from a rolling 3-hour window using the 70th percentile of the no-trigger current `I`.
+
+## What the code does
+
+For a typical run, the package:
+
+1. loads the requested ACE files,
+2. downloads missing ACE, SuperMAG, and substorm files if allowed,
+3. computes the ACE-to-subsolar propagation delay,
+4. time-shifts the solar-wind data and interpolates it to a 1-minute grid,
+5. computes the WINDMI input voltage,
+6. runs the WINDMI model once without the unloading trigger,
+7. computes the trigger current series `I_c`,
+8. runs the WINDMI model again with the trigger turned on,
+9. writes output tables, summary metadata, and a comparison figure.
 
 ## Repository layout
 
 ```text
 pyWINDMI/
-├── data/
 ├── examples/
-│   ├── case_1_constant_params_daily_ic.py
-│   ├── case_2_constant_params_rolling_ic.py
-│   └── case_3_variable_params_rolling_ic.py
+│   └── run_windmi.py
 ├── src/
 │   ├── __init__.py
 │   ├── bootstrap.py
@@ -108,44 +151,36 @@ pyWINDMI/
 │   ├── model.py
 │   ├── plotting.py
 │   └── triggers.py
+├── CITATION.cff
+├── LICENSE
+├── changelog.md
 ├── pyproject.toml
 ├── setup.py
 └── README.md
 ```
 
-## What the code does
-
-For a typical run, the package:
-
-1. loads ACE input files for the requested years,
-2. downloads missing ACE files if allowed,
-3. computes the ACE-to-subsolar propagation delay,
-4. resamples the shifted solar-wind data to a 1-minute grid,
-5. computes the input coupling voltage,
-6. runs the WINDMI model,
-7. saves output tables and figures.
-
-Optional SuperMAG and substorm catalog files are used only for comparison plots. The WINDMI run itself does not require them.
-
 ## Input data
 
-By default, ACE and SuperMAG data files are imported from this GitHub repository:
-(currently available for the years 1995-2009)
+By default, missing files are downloaded from the companion data repository:
+
 ```text
-https://github.com/soumyajitdey/ACE_data.git
+https://github.com/soumyajitdey/ACE_data
 ```
 
-So in most cases, you do not need to manually download the ACE files first.
+The code looks for files in this order:
+
+1. the path passed through `--data-root`,
+2. the environment variable `WINDMI_DATA_ROOT`,
+3. `./data` relative to the current working directory.
 
 ### Required ACE files
 
-The examples expect yearly ACE CSV files with names like:
+Files are expected in the form:
 
 ```text
-data/
-├── ACE_2000.csv
-├── ACE_2001.csv
-└── ...
+ACE_2000.csv
+ACE_2001.csv
+...
 ```
 
 Each ACE file must contain at least these columns:
@@ -154,15 +189,16 @@ Each ACE file must contain at least these columns:
 Time, Bx, By, Bz, Vx, Vy, Vz, Np
 ```
 
-The code searches for input data in this order:
+Column meanings:
 
-1. the path passed with `--data-root`
-2. the environment variable `WINDMI_DATA_ROOT`
-3. `./data` relative to the current working directory
+- `Time`: timestamp of the ACE measurement.
+- `Bx`, `By`, `Bz`: interplanetary magnetic-field components.
+- `Vx`, `Vy`, `Vz`: solar-wind velocity components.
+- `Np`: proton number density.
 
 ### Optional comparison files
 
-These files are optional:
+These are not required for the model integration itself, but they are used in the comparison plot.
 
 ```text
 SuperMag_<year>.csv
@@ -173,33 +209,112 @@ Substorms_Newell_1970_to_2022.csv
 Substorms_Ohtani_1970_to_2022.csv
 ```
 
-If present, they are added to the comparison plots. If absent, the model still runs.
+Minimum required columns:
 
-## Common command-line options
-
-All three examples accept the same main options:
-
-```text
---start            Start datetime in ISO format
---stop             Stop datetime in ISO format
---output-dir       Output folder
---data-root        Optional path to input data
---ace-url-template Optional download template for missing ACE files
---no-prompt        Disable download prompts for missing ACE files
-```
+- `SuperMag_<year>.csv`: `Date_UTC`, `SML`
+- substorm catalog files: `Date_UTC`
 
 ## Output
 
-Each example writes results to its own output directory by default:
+If `--output-dir` is not given, the example script creates a folder like:
 
-- `outputs/case_1_constant_daily_ic`
-- `outputs/case_2_constant_rolling_ic`
-- `outputs/case_3_variable_rolling_ic`
+```text
+outputs/windmi_<mode-LCS>_LCS_<mode-Ic>_Ic_<start-date>_to_<stop-date>
+```
 
-The output directory contains model results and comparison figures.
+Example:
+
+```text
+outputs/windmi_variable_LCS_rolling_Ic_2000-07-15_to_2000-07-19
+```
+
+The output directory contains the following files.
+
+### 1. `processed_input.csv`
+
+Preprocessed solar-wind input after time shifting and 1-minute interpolation, plus the coupling function used to drive WINDMI. This table is the actual model input.
+
+Expected columns include:
+
+- `Bx`, `By`, `Bz`: IMF components after the WINDMI time shift.
+- `Vx`, `Vy`, `Vz`: solar-wind velocity components after the time shift.
+- `Np`: proton density after the time shift.
+- `vBs`: the computed `vBs` coupling function.
+- `input_voltage`: the coupling function actually used by the run. In the current code this is `vBs`.
+
+Notes:
+
+- the time index is the shifted/interpolated 1-minute time grid,
+- this file is what the solver actually sees, not the raw ACE table.
+
+### 2. `no_trigger.csv`
+
+WINDMI state variables from the run without the unloading trigger.
+
+Columns:
+
+- `I`: cross-tail current.
+- `V`: magnetospheric potential.
+- `I1`: region-1/current-sheet branch current used in the model equations.
+- `VI`: ionospheric potential.
+- `pres`: plasma-sheet pressure.
+- `Kk`: plasma-sheet kinetic energy variable.
+- `I2`: ring-current / region-2 branch current variable.
+- `Wrc`: ring-current energy.
+
+### 3. `with_trigger.csv`
+
+WINDMI state variables from the run with the unloading trigger active.
+
+Columns:
+
+- `I`, `V`, `I1`, `VI`, `pres`, `Kk`, `I2`, `Wrc`: same meanings as in `no_trigger.csv`.
+- `I_c`: trigger current threshold used at each time step.
+
+### 4. `variable_parameters.csv`  *(only for `--mode-LCS variable`)*
+
+Time-dependent values of the three model parameters computed from the input data.
+
+Columns:
+
+- `L`: effective inductance used by the model.
+- `C`: effective capacitance used by the model.
+- `Sigma`: effective conductance parameter used by the model.
+
+This file is written only when `--mode-LCS variable` is used.
+
+### 5. `comparison.png`
+
+A two-panel comparison figure.
+
+- Top panel: `I` from the no-trigger and with-trigger runs, plus `I_c` when available.
+- Bottom panel: unloading switch function `Theta`, with optional Newell and Ohtani substorm onset markers, and optional SuperMAG `SML` on the right axis.
+
+### 6. `summary.json`
+
+Run metadata and bookkeeping information.
+
+Current fields include:
+
+- `case`
+- `constant_time_delay_seconds`
+- `n_input_rows`
+- `n_processed_rows`
+- `n_no_trigger_rows`
+- `n_with_trigger_rows`
+- `start_requested`
+- `stop_requested`
+- `start`
+- `stop`
+- `years_requested`
+- `supermag_available`
+- `substorm_catalogs_available`
+- `mode_LCS`
+- `mode_Ic`
+- `output folder`
 
 ## Notes
 
-- The internal Python source folder is currently `src/windmi_pub/`.
-- The example scripts already add `src/` to `sys.path`, so running them from the repo root is enough.
-- You do not need to rename `windmi_pub` to use the examples.
+- The package now uses one main example script instead of three separate case scripts.
+- The different legacy cases are now reproduced by selecting `--mode-LCS` and `--mode-Ic`.
+- Optional comparison files are automatically downloaded when allowed; otherwise the run can still proceed if those files are already present locally.
