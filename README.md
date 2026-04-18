@@ -136,6 +136,7 @@ pyWINDMI/
 ## Citation
 
 If you use pyWINDMI in published work, please cite it using the metadata in `CITATION.cff`.
+
 ---
 
 ## References
