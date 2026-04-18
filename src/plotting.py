@@ -47,3 +47,51 @@ def save_comparison_plot(no_trigger: pd.DataFrame, with_trigger: pd.DataFrame, s
     fig.savefig(output_path, dpi=150, bbox_inches="tight")
     plt.close(fig)
     return output_path
+
+def plot_state_variables(with_trigger: pd.DataFrame, output_path: str | Path) -> Path:
+    output_path = Path(output_path)
+
+    vars_to_plot = ["I", "V", "I1", "VI", "pres", "Kk", "I2", "Wrc"]
+
+    titles = {
+        "I": "Cross-tail Current",
+        "V": "Magnetospheric Potential",
+        "I1": "Region-1 Current",
+        "VI": "Ionospheric Potential",
+        "pres": "Plasma Sheet Pressure",
+        "Kk": "Plasma Sheet Kinetic Energy",
+        "I2": "Region-2 / Ring Current",
+        "Wrc": "Ring Current Energy",
+    }
+
+    ylabels = {
+        "I": "I",
+        "V": "V",
+        "I1": "I1",
+        "VI": "VI",
+        "pres": "Pressure",
+        "Kk": "Kinetic Energy",
+        "I2": "I2",
+        "Wrc": "Energy",
+    }
+
+    fig, axes = plt.subplots(4, 2, figsize=(14, 10), sharex=True)
+    axes = axes.flatten()
+
+    time = with_trigger["time"] if "time" in with_trigger.columns else with_trigger.index
+
+    for i, var in enumerate(vars_to_plot):
+        ax = axes[i]
+        ax.plot(time, with_trigger[var])
+        ax.set_title(titles[var])
+        ax.set_ylabel(ylabels[var])
+        ax.grid(True)
+
+    axes[-1].set_xlabel("Time")
+    axes[-2].set_xlabel("Time")
+
+    fig.tight_layout()
+    fig.savefig(output_path, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+
+    return output_path

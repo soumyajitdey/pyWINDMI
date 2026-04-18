@@ -46,49 +46,6 @@ def calc_l_c_sigma(data: pd.DataFrame, l_x: float = 80.0, l_y: float = 50.0, l_z
     sigma = 0.1 * (l_x_m * l_z_m / l_y_m) * (e_charge * n_ps / b_x0) * sqrt(rho_i / l_z_m)
     return l_val, c_val, sigma
 
-# def _frame_from_output(
-#     out_dict: dict,
-#     index: pd.DatetimeIndex,
-#     ic_values=None,
-#     l_values=None,
-#     c_values=None,
-#     sigma_values=None,
-# ) -> pd.DataFrame:
-
-#     frame = pd.DataFrame(
-#         {key: np.asarray(out_dict[key]) for key in STATE_KEYS},
-#         index=index
-#     )
-
-#     # ---- I_c ----
-#     if ic_values is not None:
-#         if np.isscalar(ic_values):
-#             frame["I_c"] = float(ic_values)
-#         else:
-#             frame["I_c"] = np.asarray(ic_values)
-
-#     # ---- L ----
-#     if l_values is not None:
-#         if np.isscalar(l_values):
-#             frame["L"] = float(l_values)
-#         else:
-#             frame["L"] = np.asarray(l_values)
-
-#     # ---- C ----
-#     if c_values is not None:
-#         if np.isscalar(c_values):
-#             frame["C"] = float(c_values)
-#         else:
-#             frame["C"] = np.asarray(c_values)
-
-#     # ---- Sigma ----
-#     if sigma_values is not None:
-#         if np.isscalar(sigma_values):
-#             frame["Sigma"] = float(sigma_values)
-#         else:
-#             frame["Sigma"] = np.asarray(sigma_values)
-
-#     return frame
 
 def _save_common_outputs(case_name: str, title: str, output_dir: str | Path, processed: pd.DataFrame, no_trigger: pd.DataFrame, with_trigger: pd.DataFrame, supermag: pd.DataFrame, substorms: dict[str, pd.DataFrame], meta: dict, variable_parameters: pd.DataFrame | None = None) -> Path:
     output_dir = Path(output_dir)
