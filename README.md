@@ -23,11 +23,7 @@ python -m bootstrap
 Run commands from the repository root (`pyWINDMI/` folder).
 
 ```bash
-python examples/run_windmi.py \
-    --start 2000-07-15T00:00:00 \
-    --stop  2000-07-19T00:00:00 \
-    --mode-LCS variable \
-    --mode-Ic rolling
+python examples/run_windmi.py --start 2000-07-15T00:00:00 --stop 2000-07-19T00:00:00 --mode-LCS variable --mode-Ic rolling
 ```
 
 The four flags above are all required. See [Configuration](#configuration) for a full description of each.
