@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 from data import prepare_inputs
 from model import DEFAULT_PARAMS, STATE_KEYS, solve_windmi_rk45
-from plotting import save_comparison_plot
+from plotting import save_comparison_plot, plot_state_variables
 from triggers import rolling_percentile_trigger
 
 def _as_seconds(index: pd.DatetimeIndex, start: dt.datetime) -> np.ndarray:
@@ -57,7 +57,7 @@ def _save_common_outputs(case_name: str, title: str, output_dir: str | Path, pro
         variable_parameters.to_csv(output_dir / 'variable_parameters.csv')
 
     save_comparison_plot(no_trigger=no_trigger, with_trigger=with_trigger, supermag=supermag, substorms=substorms, output_path=output_dir / 'comparison.png', title=title)
-
+    plot_state_variables(with_trigger=with_trigger, output_path=output_dir / 'state_variables.png')
     summary = {
         'case': case_name,
         **meta,
