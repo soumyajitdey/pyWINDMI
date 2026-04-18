@@ -20,7 +20,7 @@ python -m bootstrap
 
 ## Running the model
 
-Run commands from the repository root.
+Run commands from the repository root (`pyWINDMI/` folder).
 
 ```bash
 python examples/run_windmi.py \
@@ -44,24 +44,24 @@ The time window for the run, in ISO 8601 format (UTC). The model fetches and pro
 
 Controls how the three core model parameters — inductance `L`, capacitance `C`, and conductance `σ` of magnetosphere — are determined.
 
-- `constant` — use fixed default values throughout the run.
-- `variable` — derive time-dependent values from the solar-wind input at each timestep.
+- `constant` — use fixed default values throughout the run, provided in `src/model.py`.
+- `variable` — derives the parameters at each timestep (using `calc_l_c_sigma` function in `src/cases.py`).
 
 ### `--mode-Ic`
 
-Controls how the unloading trigger current `I_c` is computed.
+Controls how the unloading trigger geotail current `I_c` is computed (uses `src/triggers.py`).
 
-- `daily` — one value per day, set to the 70th percentile of the no-trigger current `I` for that day.
+- `daily` — daily current threshold set to the 70th percentile of the no-trigger current `I` for that day.
 - `rolling` — recomputed continuously from a rolling 3-hour window using the same percentile.
 
 ### Additional options
 
-| Flag | Description |
-|---|---|
-| `--output-dir PATH` | Write results to this folder. If omitted, a dated folder is generated from the run settings. |
-| `--data-root PATH` | Look for input data here instead of the default search path. |
-| `--ace-url-template URL` | Custom download template for missing ACE files. |
-| `--no-prompt` | Skip all interactive download confirmations. |
+| Flag | Default | Description |
+|---|---|---|
+| `--output-dir PATH` | Auto-generated from run settings | Write results to a specific folder. |
+| `--data-root PATH` | `./data` (or `WINDMI_DATA_ROOT`) | Look for input data here instead of the default search path. |
+| `--ace-url-template URL` | `https://github.com/soumyajitdey/ACE_data` | Custom download template for missing ACE files. |
+| `--no-prompt` | Prompts enabled | Skip all interactive download confirmations. |
 
 ---
 
@@ -133,10 +133,6 @@ pyWINDMI/
 ```
 
 ---
-
-## Citation
-
-If you use pyWINDMI in published work, please cite it using the metadata in `CITATION.cff`.
 
 
 ## References
