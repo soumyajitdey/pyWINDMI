@@ -1,9 +1,16 @@
 cff-version: 1.2.0
-message: "If you use this software, please cite it."
-title: "pyWINDMI"
+title: pyWINDMI
+message: "If you use this software in your research, please cite it using the metadata below."
 type: software
 authors:
   - family-names: Dey
     given-names: Soumyajit
-version: 0.1.0
-date-released: 2026-03-01
+    email: soumyajit.dey@southalabama.edu
+  - family-names: Spencer
+    given-names: Edmund
+  - family-names: Adhya
+    given-names: Purbi
+repository-code: https://github.com/soumyajitdey/pyWINDMI
+license: MIT
+version: 1.0.0
+date-released: 2025-01-01

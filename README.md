@@ -131,9 +131,12 @@ pyWINDMI/
 ├── changelog.md
 └── pyproject.toml
 ```
-
 ---
 
+## Citation
+
+If you use pyWINDMI in published work, please cite it using the metadata in `CITATION.cff`.
+---
 
 ## References
 1. Horton, W., and I. Doxas. “A Low‐dimensional Dynamical Model for the Solar Wind Driven Geotail‐ionosphere System.” Journal of Geophysical Research: Space Physics 103, no. A3 (1998): 4561–72. https://doi.org/10.1029/97JA02417.
