@@ -85,6 +85,8 @@ def windmi(
     ace_url_template: str | None = None,
     prompt_for_download: bool = True,
 ) -> Path:
+    print(f"Running WINDMI with LCS={mode_LCS} and Ic={mode_Ic} from {start} to {stop}")
+    print("Preparing input data...")
     processed, supermag, substorms, meta = prepare_inputs(
         start,
         stop,
@@ -93,6 +95,7 @@ def windmi(
         prompt_for_download=prompt_for_download,
     )
     N = len(processed)
+    print(f"Prepared input data with {len(processed)} points.")
     if N < 2:
         raise ValueError("Need at least 2 data points to run the model.")
     t_seconds = _as_seconds(processed.index, start)
@@ -102,7 +105,9 @@ def windmi(
     if mode_LCS == "constant":
         l_arr = c_arr = sigma_arr = None
     elif mode_LCS == "variable":
+        print("Calculating variable L, C, Sigma parameters...")
         l_arr, c_arr, sigma_arr = calc_l_c_sigma(processed)
+        print("Calculated L, C, Sigma for all time points.")
     else:
         raise ValueError(f"Invalid mode_LCS: {mode_LCS}")
 
@@ -194,7 +199,6 @@ def windmi(
             {"L": l_arr, "C": c_arr, "Sigma": sigma_arr},
             index=processed.index,
         )
-
     title = f"LCS={mode_LCS}, Ic={mode_Ic}"
     return _save_common_outputs(
         "combined_case",
