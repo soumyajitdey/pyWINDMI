@@ -97,6 +97,8 @@ The directory contains the following files.
 
 **`comparison.png`** — a two-panel figure. The top panel overlays `I` from both passes alongside `I_c`. The bottom panel shows the unloading trigger function `Θ`, with optional substorm onset markers from available catalogs and SuperMAG `SML` index on the secondary axis.
 
+**`state_variables.png`** - plots the state variables from the second run with the trigger function `Θ` enabled.
+
 **`summary.json`** — metadata for the run: requested and actual time ranges, row counts for each output table, data availability flags, and the mode settings used.
 
 ---
