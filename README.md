@@ -48,7 +48,7 @@ Controls how the three core model parameters — inductance `L`, capacitance `C`
 Controls how the unloading trigger geotail current `I_c` is computed (uses `src/triggers.py`).
 
 - `daily` — daily current threshold set to the 70th percentile of the no-trigger current `I` for that day.
-- `rolling` — recomputed continuously from a rolling 3-hour window using the same percentile.
+- `rolling` — Current threshold updated at each timestep, calculated as 70th percentile of a rolling 3-hour window.
 
 ### Additional options
 
