@@ -87,7 +87,7 @@ outputs/windmi_<mode-LCS>_LCS_<mode-Ic>_Ic_<start>_to_<stop>/
 
 The directory contains the following files.
 
-**`processed_input.csv`** — the solar-wind data as the solver actually sees it: time-shifted to account for propagation delay, resampled to a 1-minute grid, and extended with the computed `vBs` coupling function and `input_voltage` column.
+**`processed_input.csv`** — Solar wind data time-shifted to Earth's bow shock, resampled to 1-minute grid, including the solar wind coupling function 'vBs'.
 
 **`no_trigger.csv`** — state variables from the first model pass, run without the unloading trigger. Columns: `I` (cross-tail current), `V` (magnetospheric potential), `I1` (Region-1 FAC), `VI` (ionospheric potential), `pres` (plasma-sheet pressure), `Kk` (plasma sheet kinetic energy), `I2` (Region-2 FAC), `Wrc` (ring-current energy).
 
