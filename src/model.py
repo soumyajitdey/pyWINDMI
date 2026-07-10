@@ -27,7 +27,7 @@ DEFAULT_PARAMS = {
     "tauk": 10.0 * 60.0,
     "taurc": 12.0 * 3600.0,
     "beta_sw": 0.7,
-    "Ic_trig": 2.0e7,
+    "Ic_trig": 2.0e8,
 }
 
 STATE_KEYS = ["I", "V", "I1", "VI", "pres", "Kk", "I2", "Wrc"]
